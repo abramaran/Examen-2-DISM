@@ -15,7 +15,7 @@ El **factor máximo de mejora** depende de:
 - **% de tiempo** que consuma la porción acelerable.
 - **Factor de aceleración** que podamos obtener.
 
-![1547071720450](.\Resumen DISM parcial 2.assets\1547071720450.png "Factor máximo de mejora")
+![1547071720450](Resumen DISM parcial 2.assets\1547071720450.png "Factor máximo de mejora")
 
 Al final suele ser más conveniente acelerar la parte que más tiempo ocupe si la diferencia es importante.
 
@@ -57,6 +57,6 @@ Modelo de procesamiento: **Single Instruction Multiple Thread (SIMT)**
 - **GPU**: Tarjeta de expansión. Se conecta al sistema mediante puertos **PCIe** presentes en la placa base.
 - **Chipset**: Gestionar conexiones de la CPU con el resto de componentes.
   - Southbridge: Gestiona periféricos (ratón, teclado, etc)
-  - Northbridge: Gestiona buses de gráficos, comunicación con la memoria de la CPU![1547143292204](.\Resumen DISM parcial 2.assets\1547143513365.png)
+  - Northbridge: Gestiona buses de gráficos, comunicación con la memoria de la CPU![1547143292204](Resumen DISM parcial 2.assets\1547143513365.png)
 - CPUs integradas: La tarjeta gráfica se encuentra integrada en 
 
