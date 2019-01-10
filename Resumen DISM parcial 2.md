@@ -148,9 +148,32 @@ Tres tipos de funciones:
 | Lanzada en   | CPU | GPU | CPU |
 | Se ejecuta en | CPU | GPU | GPU |
 
+Invocación de kernel:
+
+```c++
+kernel_routine<<<grid_dim, block_dim>>> (args...)
+```
+
+Definir tamaños de malla y bloque:
+
+```c++
+dim3 block_dim (int 1d, int 2d, int 3d);
+dim3 grid_dim (int 1d, int 2d, int 3d);
+```
+
+Si no queremos usar una dimensión le pasamos un 1.
+
 ##### Hilos
 
-Pues eso, hilos de ejecución los clásicos *threads*.
+Pues eso, hilos de ejecución los clásicos *threads*. Cada hilo ejecuta una copia del kernel. Dispone de:
+
+- Variables pasadas por parámetro (punteros memoria GPU)
+- Constantes globales en memoria GPU
+- Variables especiales de identificación:
+  - gridDim: tamaño de la malla
+  - blockDim: tamaño de los bloques
+  - blockIdx: identificador de bloque
+  - threadIdx: identificador de hilo
 
 ##### Warps
 
@@ -158,8 +181,11 @@ Unidad que agrupa 32 hilos.
 
 ##### Bloques
 
-Conjunto de hilos.
+Conjunto de hilos. Puede tener 1, 2 o 3 dimensiones. Cada bloque se ejecuta sobre un único SM de forma íntegra. Un SM puede tener varios bloques
 
 ##### Mallas
 
 Conjunto de bloques. Puede tener 1, 2 o 3 dimensiones.
+
+#### 3.2.4 Flujo de ejecución
+
