@@ -58,5 +58,45 @@ Modelo de procesamiento: **Single Instruction Multiple Thread (SIMT)**
 - **Chipset**: Gestionar conexiones de la CPU con el resto de componentes.
   - Southbridge: Gestiona periféricos (ratón, teclado, etc)
   - Northbridge: Gestiona buses de gráficos, comunicación con la memoria de la CPU![1547143292204](Resumen DISM parcial 2.assets\1547143513365.png)
-- CPUs integradas: La tarjeta gráfica se encuentra integrada en 
+- CPUs integradas: La tarjeta gráfica se encuentra integrada en el *Northbridge*. Comparte tanto controlador de memoria como memoria física con la CPU.![1547145414600](Resumen DISM parcial 2.assets/1547145414600.png)
+- Otras configuraciones:
+  - Múltiples GPUs varios puertos PCIe.
+  - Múltiples GPUs intercomunicadas: Scalable Link Interface (SLI) (NVIDIA), CrossFire (AMD). Ventaja: Menor latencia y mayor ancho de banda al no pasar por el Northbridge.![1547145665054](Resumen DISM parcial 2.assets/1547145665054.png)
 
+#### 3.1.2 Single Instruction Multiple Threads (SIMT)
+
+##### Taxonomía de Flynn
+
+![1547145795947](Resumen DISM parcial 2.assets/1547145795947.png)
+
+**GPUs**: Combinan **SIMD** con procesadores **multihilo**: **Single Instruction Multiple
+Thread (SIMT)**.
+
+**SIMT: Un procesador** ejecuta **múltiples hilos** de manera **concurrente** sobre **diferentes datos**.
+
+Arquitectura de una CPU:
+
+- SISD: procesadores **monolíticos** completamente **secuenciales.**
+- SIMD: **Multinúcleo** o extensiones vectoriales.
+
+##### Diferencias de arquitectura entre CPU y GPU
+
+| CPU                                                 | GPU                                                          |
+| --------------------------------------------------- | ------------------------------------------------------------ |
+| Cachés grandes                                      | Cachés reducidos                                             |
+| Unidad de control compleja                          | Unidad de control simple                                     |
+| ALUs complejas y poco numerosas con escasa latencia | Gran número de ALUs simples centradas en la cantidad de trabajo |
+| Poca latencia, poca cantidad de trabajo             | Mucha latencia, mucha cantidad de trabajo                    |
+
+![1547146447615](Resumen DISM parcial 2.assets/1547146447615.png "Ilustración gráfica de las diferencias entre los recursos hardware de una CPU y una GPU.")
+
+#### 3.1.3 Streaming Multiprocessors (SMs)
+
+Una GPU CUDA se descompone en:
+
+- **Interfaz** que conecta GPU al bus PCIe. Se encarga también de la sincronización GPU-CPU.
+- **Copy engines**. Transferencias de memoria asíncronas. Entre 0 y 2. 
+- Interfaz de memoria **Dynamic RAM (DRAM)**. **Jerarquía de cachés** que conecta la GPU a la memoria principal. *Esto lo vimos cuando la segunda práctica de CUDA.*
+- **Texture Processing Clusters (TPCs)** o **Graphics Processing Clusters (GPCs)**. Contienen los SMs y caché.
+
+**Streaming Multiprocessors (SMs)**: unidades de cómputo de la arquitectura CUDA.
