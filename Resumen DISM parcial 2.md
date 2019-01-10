@@ -109,3 +109,57 @@ Cada SM está formado por:
 - Caché de constantes.
 - Memoria compartida para todos los hilos.
 - Archivo de registros.
+
+![1547147924292](Resumen DISM parcial 2.assets/1547147924292.png)
+
+### 3.2 Arquitectura software
+
+CUDA está compuesto por una serie de capas (stack):
+
+![1547148622079](Resumen DISM parcial 2.assets/1547148622079.png)
+
+#### 3.2.2 Compilación
+
+El compilador decide lo que va a la **CPU** (**Host**) y a la **GPU** (**Device**). Lo de la GPU se pasa a un **lenguaje intermedio**, **Parallel Thread eXecution (PTX)** . Esto sirve para que se pueda ejecutar en muchas tarjetas gráficas distintas, lo interpreta el driver.
+
+![1547149260260](Resumen DISM parcial 2.assets/1547149260260.png)
+
+#### 3.2.3 Conceptos básicos
+
+##### Dispositivo
+
+Cada GPU física del sistema.
+
+##### Contexto
+
+Equivalente a los procesos de la CPU pero en la GPU. Contiene los objetos que forman un programa CUDA.
+
+##### Kernels
+
+Funciones cuya ejecución:
+
+- Es ordenada de forma asíncrona por la CPU.
+- Se realiza en la GPU de forma masivamente paralela.
+
+Tres tipos de funciones:
+
+|              | `__host__` | `__device__` | `__global__` |
+| ------------ | :--------: | :--: | :--: |
+| Lanzada en   | CPU | GPU | CPU |
+| Se ejecuta en | CPU | GPU | GPU |
+
+##### Hilos
+
+Pues eso, hilos de ejecución los clásicos *threads*.
+
+##### Warps
+
+Unidad que agrupa 32 hilos.
+
+##### Bloques
+
+Conjunto de hilos.
+
+##### Mallas
+
+Conjunto de bloques. Puede tener 1, 2 o 3 dimensiones.
