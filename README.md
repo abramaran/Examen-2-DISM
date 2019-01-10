@@ -6,3 +6,4 @@ Varios pdfs cortesía de [Naru](https://github.com/Narukage) y un [resumen](http
 - Las imágenes del resumen no se muestran en la vista previa de GitHub.
 - Utilizo [Git LFS](https://git-lfs.github.com/) en este repositorio para no tener 20 copias de los mismos pdfs. Si lo clonáis sin tenerlo instalado probablemente no pase nada, pero yo que sé no lo he probado nunca.
 - Las notas de los pdfs están hechas con [Adobe Acrobat reader](https://acrobat.adobe.com/es/es/), la mayoría de lectores PDF las muestran bien pero yo aviso por si hay problemas con el formato.
+- [🐰🥚](http://www.partridgegetslucky.com/)
