@@ -99,4 +99,13 @@ Una GPU CUDA se descompone en:
 - Interfaz de memoria **Dynamic RAM (DRAM)**. **Jerarquía de cachés** que conecta la GPU a la memoria principal. *Esto lo vimos cuando la segunda práctica de CUDA.*
 - **Texture Processing Clusters (TPCs)** o **Graphics Processing Clusters (GPCs)**. Contienen los SMs y caché.
 
-**Streaming Multiprocessors (SMs)**: unidades de cómputo de la arquitectura CUDA.
+**Streaming Multiprocessors (SMs)**: unidades de cómputo de la arquitectura CUDA. Se agrupan en GPCs.
+
+Cada SM está formado por:
+
+- **Núcleos CUDA**. Unidades de ejecución. Operaciones aritméticas enteras o float.
+- Unidades de **funciones especiales**. Aproximaciones de operaciones complejas.
+- **Warp schedulers**. Distribuir warps a los núcleos.
+- Caché de constantes.
+- Memoria compartida para todos los hilos.
+- Archivo de registros.
