@@ -175,6 +175,12 @@ Pues eso, hilos de ejecución los clásicos *threads*. Cada hilo ejecuta una cop
   - blockIdx: identificador de bloque
   - threadIdx: identificador de hilo
 
+Direccionamiento: 
+$$
+idx = blockId.x · blockDim + threadId
+$$
+
+
 ##### Warps
 
 Unidad que agrupa 32 hilos.
@@ -188,4 +194,18 @@ Conjunto de hilos. Puede tener 1, 2 o 3 dimensiones. Cada bloque se ejecuta sobr
 Conjunto de bloques. Puede tener 1, 2 o 3 dimensiones.
 
 #### 3.2.4 Flujo de ejecución
+
+1. Inicialización GPU
+2. Reserva de memoria en host y device
+3. Copia de datos de host a device
+4. Lanzamiento de kernel
+5. Copia de datos de device a host
+6. Repetir del 3. al 5. como sea necesario
+7. Liberación de memoria, fin del proceso
+
+![1547209381892](Resumen DISM parcial 2.assets/1547209381892.png)
+
+#### 3.2.5 Evolución generacional
+
+La capacidad de cómputo de cada generación de tarjetas gráficas CUDA se conoce como Compute Capability. Para saber las características de la nuestra, lo mejor es ejecutar el ejemplo en *CUDA Samples/1_Utilities/deviceQuery*.
 
