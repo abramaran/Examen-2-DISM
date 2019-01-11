@@ -151,8 +151,25 @@ Tres tipos de funciones:
 Invocación de kernel:
 
 ```c++
-kernel_routine<<<grid_dim, block_dim>>> (args...)
+// Con el API Runtime
+kernel <<< malla, bloque, memoria_compartida, stream >>> (parámetro1, parámetro2, ..., parámetroN); // memoria_compartida y stream son opcionales y se pueden omitir.
+
+// Con la API del driver
+CUResult cuLaunchKernel (
+    CUfunction kernel,
+    unsigned int gridDimX,
+    unsigned int gridDimY,
+    unsigned int gridDimZ,
+    unsigned int blockDimX,
+    unsigned int blockDimY,
+    unsigned int blockDimZ,
+    unsigned int shmem,
+    CUstream stream,
+    void ** params,
+    void ** extra);
 ```
+
+Invo
 
 Definir tamaños de malla y bloque:
 
@@ -187,11 +204,15 @@ Unidad que agrupa 32 hilos.
 
 ##### Bloques
 
-Conjunto de hilos. Puede tener 1, 2 o 3 dimensiones. Cada bloque se ejecuta sobre un único SM de forma íntegra. Un SM puede tener varios bloques
+Conjunto de hilos. Puede tener 1, 2 o 3 dimensiones. Cada bloque se ejecuta sobre un único SM de forma íntegra. Un SM puede tener varios bloques.
+
+Es común elegir tamaños de bloque múltiplo de un warp (32 hilos). Esto se supone que tiene una ligera mejora en el rendimiento.
 
 ##### Mallas
 
 Conjunto de bloques. Puede tener 1, 2 o 3 dimensiones.
+
+![1547230832653](Resumen DISM parcial 2.assets/1547230832653.png)
 
 #### 3.2.4 Flujo de ejecución
 
@@ -209,3 +230,18 @@ Conjunto de bloques. Puede tener 1, 2 o 3 dimensiones.
 
 La capacidad de cómputo de cada generación de tarjetas gráficas CUDA se conoce como Compute Capability. Para saber las características de la nuestra, lo mejor es ejecutar el ejemplo en *CUDA Samples/1_Utilities/deviceQuery*.
 
+## 5. Modelo de procesamiento
+
+### 5.3 Limitaciones de memoria
+
+- Recursos reservados al inicio
+- Registros limitados por hilo
+- Memoria local limitada por hilo
+- La memoria global no es infinita
+- No hay memoria virtual ni swapping
+
+Cada hilo necesita memoria para ejecutarse y para los datos. Suelen utilizar una abstracción de la memoria de la GPU, la memoria local. No hay paginación virtual en la GPU. Reserva anticipada de la memoria por hilo.
+
+### 5.4 Limitaciones de tiempo
+
+Situaciones donde la GPU se usa para gráficos y CUDA al mismo tiempo: el sistema operativo y el driver fijan un **tiempo máximo** de ejecución, transcurrido el cual la gráfica cambia otra vez a sus funciones de visualización.
