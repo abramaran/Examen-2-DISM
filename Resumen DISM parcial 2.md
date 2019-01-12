@@ -314,7 +314,7 @@ Un kernel se lanza de manera asíncrona, es decir, el programa del host puede se
 - Entre **kernels**. Con SMs de generación 2.X+ pueden ejecutar hasta 4 kernels en paralelo.
 - **Multi-GPUs**.
 
-#### Streams
+#### ¿Qué son?
 
 Abstracciones: Secuencia de operaciones que se ejecutan de forma secuencial según el orden
 de envío en la GPU.
@@ -323,4 +323,70 @@ de envío en la GPU.
 - Operaciones de varios streams y distinta naturaleza: Pueden solaparse.
 
 ### 5.9 Medición de tiempos, sincronización host-device y eventos.
+
+La medición de tiempos se suele ejecutar en el host, o bien con herramientas del sistema o con cronómetros de CUDA.
+
+Las **transferencias de memoria** entre device y host son **bloqueantes**.
+
+```c++
+cudaMemcpy(d_x_, h_x_, vector_size_bytes_, cudaMemcpyHostToDevice);
+// Host bloqueado hasta finalizar copia
+cudaMemcpy(d_y_, h_y_, vector_size_bytes_, cudaMemcpyHostToDevice);
+// Host bloqueado hasta finalizer copia
+
+kernel<<<grid, block>>>(d_x_, d_y_, N);
+// Host desbloqueado, continua ejecución nada más emitir la orden!
+
+cudaMemcpy(h_y_, d_y_, vector_size_bytes_, cudaMemcpyDeviceToHost);
+// Host bloqueado hasta finalizer copia
+```
+
+Para medir el tiempo de ejecución del kernel de manera sencilla podemos bloquear el host hasta que acabe la ejecución del kernel.
+
+```c++
+cudaMemcpy(d_x_, h_x_, vector_size_bytes_, cudaMemcpyHostToDevice);
+// Host bloqueado hasta finalizar copia
+cudaMemcpy(d_y_, h_y_, vector_size_bytes_, cudaMemcpyHostToDevice);
+// Host bloqueado hasta finalizer copia
+
+unsigned long t_start_ = cpu_timer();
+kernel<<<grid, block>>>(d_x_, d_y_, N);
+// Host desbloqueado, continua ejecución nada más emitir la orden!
+cudaDeviceSynchronize();
+// Host bloqueado hasta que la GPU termine el último comando
+unsigned long t_end_ = cpu_timer();
+
+Unsigned long elapsed_ = t_end_ - t_start_;
+
+cudaMemcpy(h_y_, d_y_, vector_size_bytes_, cudaMemcpyDeviceToHost);
+// Host bloqueado hasta finalizar copia
+```
+
+Lo importante en ese código es el `cudaDeviceSynchronize()` que espera a que acabe la ejecución del kernel.
+
+Para no bloquear la CPU y medir el tiempo de ejecución tendríamos que usar **eventos**.
+
+```c++
+cudaEvent_t t_start_, t_stop_;
+cudaEventCreate(&t_start_);
+cudaEventCreate(&t_stop_);
+
+cudaMemcpy(d_x_, h_x_, vector_size_bytes_, cudaMemcpyHostToDevice);
+cudaMemcpy(d_y_, h_y_, vector_size_bytes_, cudaMemcpyHostToDevice);
+
+cudaEventRecord(t_start_);
+kernel<<<grid, block>>>(d_x_, d_y_, N);
+cudaEventRecord(t_stop_);
+
+cudaMemcpy(h_y_, d_y_, vector_size_bytes_, cudaMemcpyDeviceToHost);
+cudaEventSynchronize(t_stop_);
+float milliseconds_ = 0.0f;
+cudaEventElapsedTime(&milliseconds_, t_start_, t_stop_);
+```
+
+
+
+## 7 Memorias CUDA
+
+### 7.1 Jerarquía de memorias
 
