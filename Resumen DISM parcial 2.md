@@ -245,3 +245,82 @@ Cada hilo necesita memoria para ejecutarse y para los datos. Suelen utilizar una
 ### 5.4 Limitaciones de tiempo
 
 Situaciones donde la GPU se usa para gráficos y CUDA al mismo tiempo: el sistema operativo y el driver fijan un **tiempo máximo** de ejecución, transcurrido el cual la gráfica cambia otra vez a sus funciones de visualización.
+
+### 5.5 Escalabilidad transparente y planificación
+
+**No todos los bloques son ejecutados de manera concurrente**
+
+**No hay ninguna garantía respecto a su orden de ejecución más allá de que se ejecutarán en el mismo SM**
+
+![1547295391361](Resumen DISM parcial 2.assets/1547295391361.png)
+
+En la imagen se ve que cuando ejecutas el programa CUDA tú no sabes en qué SM ni en qué orden se van a ejecutar los bloques, y también que no se ejecutan todos simultáneamente.
+
+Una vez un bloque ha sido asignado a un SM, sus hilos son ejecutados siguiendo un modelo SIMD, en agrupaciones de 32 hilos consecutivos denominadas warps. Los **hilos** (o *lanes*) **de un warp** se ejecutan **físicamente en paralelo**.
+
+Todos los hilos de un warp ejecutan la misma instrucción, y son elegidos según una cola de prioridad para ejecución.
+
+### 5.6 Sincronización y control de flujo
+
+Para sincronizar **hilos de un mismo bloque** (que sabemos que están en el mismo SM):
+
+- **Barreras de sincronización**. `__syncthreads()` detiene la ejecución hasta que todos los hilos del bloque han llegado a ese punto.
+- **Operaciones atómicas**. Lectura, escritura y modificación en memoria global o compartida. Estas funciones aseguran que solamente un hilo cada vez trabaje con la misma posición de memoria.
+- **Memoria compartida**. No dice cómo pero se supone que puede realizar algunos tipos de sincronización.
+
+### 5.7 Control de flujo
+
+Se pueden utilizar condicionales en los kernels CUDA.
+
+```c++
+if (x < 0.0)
+	z = x - 2.0;
+else
+	z = sqrt(x);
+```
+
+¡Pero **todos los hilos de un warp deben ejecutar la misma instrucción**! Así que el compilador **realiza las condiciones antes de ejecutar**, se ejecutarán todos los hilos que entren en el if, y luego el resto. Los hilos que no se ejecuten estarán marcados con un flag equivalente al NOP (no operation creo).
+
+La misma condición en predicado:
+
+```c++
+cond: p = (x < 0.0);
+p: z = x - 2.0;
+!p: z = sqrt(x);
+```
+Divergencia (Granularidad inferior al tamaño del warp)
+```c++
+if (threadIdx.x > 2) 
+  dosomething;
+else
+  dootherthing;
+```
+
+No divergencia (Granularidad múltiplo del tamaño del warp)
+
+```c++
+if (threadIdx.x / WARP_SIZE > 2) 
+  dosomething;
+else
+  dootherthing; 
+```
+
+### 5.8 Streams
+
+Un kernel se lanza de manera asíncrona, es decir, el programa del host puede seguir ejecutándose nada más lanzarlo. Para solapar cómputo y otras operaciones bloqueantes se usan **streams**. Además de la concurrencia de grano fino de los hilos, tenemos concurrencia de grano grueso de la siguiente forma:
+
+- Entre **CPU y GPU** por lo de que lanzar un kernel es asíncrono.
+- Entre **cómputo de kernel y transferencia de memoria**. Las copy engines de la GPU actúan independientemente de los SMs.
+- Entre **kernels**. Con SMs de generación 2.X+ pueden ejecutar hasta 4 kernels en paralelo.
+- **Multi-GPUs**.
+
+#### Streams
+
+Abstracciones: Secuencia de operaciones que se ejecutan de forma secuencial según el orden
+de envío en la GPU.
+
+- Operaciones de varios streams: Pueden ejecutarse de manera concurrente según recursos disponibles.
+- Operaciones de varios streams y distinta naturaleza: Pueden solaparse.
+
+### 5.9 Medición de tiempos, sincronización host-device y eventos.
+
