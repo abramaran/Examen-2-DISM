@@ -1,5 +1,7 @@
 # Resumen DISM parcial 2
 
+*Alberto Benavent Ramón, 2019*
+
 ## 2. Cálculo de rendimientos
 
 Métrica más utilizada para medir la capacidad de cálculo -> **FLOPS** o **Floating-Point Operations Per Second**.
@@ -423,7 +425,7 @@ Como una memoria rápida es cara, se utiliza una jerarquía de cachés, sucesiva
 - Alberga **variables y vectores que no caben en registros**
 - Gestión **automática** desde GPU
 
-#### 7.7.3 Memoria de constantes
+#### 7.2.3 Memoria de constantes
 
 - **Compartida** por todos los SMs
 - **Optimizada** para **solo lectura**
@@ -431,7 +433,7 @@ Como una memoria rápida es cara, se utiliza una jerarquía de cachés, sucesiva
 - Reserva estática desde CPU (`__constant__`)
 - Transferencia CPU-GPU (`cudaMempcyToSymbol()`, `cudaMemcpyFromSymbol()`)
 
-#### 7.7.4 Memoria de texturas
+#### 7.2.4 Memoria de texturas
 
 - **Compartida** por todos los SMs
 
@@ -445,7 +447,7 @@ Como una memoria rápida es cara, se utiliza una jerarquía de cachés, sucesiva
 
 - Declarada con tipo de datos (`cudaArray`)
 
-#### 7.7.5 Registros
+#### 7.2.5 Registros
 
 - Cada SM posee una **cantidad fija**
 
@@ -457,7 +459,7 @@ Como una memoria rápida es cara, se utiliza una jerarquía de cachés, sucesiva
 
 - Relativamente **limitados** en cantidad (depende del número de hilos en ejecución)
 
-#### 7.7.6 Memoria compartida
+#### 7.2.6 Memoria compartida
 
 - Cada SM posee una **cantidad fija**
 
@@ -470,3 +472,76 @@ Como una memoria rápida es cara, se utiliza una jerarquía de cachés, sucesiva
 - Reserva en la GPU (`__shared__`)
 
 - Copia de datos manual a posiciones de memoria en kernel
+
+### 7.4 Consideraciones de rendimiento en el uso de memorias GPUs
+
+La memoria no es ilimitada, *obviamente*.
+
+#### 7.4.1 Register spilling
+
+Si la aplicación necesita más registros por hilo de los disponibles:
+1. Desbordan a memoria local.
+2. Ciertas variables se convierten en arrays para almacenar un elemento por hilo.
+
+Esto conlleva una **pérdida de rendimiento**.
+
+#### 7.4.2 Acceso coalescente
+
+El acceso a posiciones de memorias coalescentes, es decir, próximas en la memoria física, mejora el rendimiento ya que aprovecha la jerarquía de memorias.![1547314629490](Resumen DISM parcial 2.assets/1547314629490.png)
+
+#### 7.3.9 Memoria compartida
+
+Variables que van a ser compartidas por todos los hilos de un bloque. 
+
+- Forma de comunicación o sincronización entre hilos de un bloque.
+- Mejora la reutilización de datos y reduce los accesos a memoria global.
+- Reduce potencialmente el número de registros necesarios por hilo.
+
+Declaración:
+
+```c++
+__global__ void medianFilter2D_sm(unsigned char *d_output, unsigned char *d_input)
+{
+  // Declaración de memoria compartida para almacenar una porción de una imagen
+   __shared__ unsigned char d_input_sm_[tamaño de porción compartida];
+	[…]
+}
+```
+
+Copia de datos de global a compartida:
+
+```c++
+__global__ void medianFilter2D_sm(unsigned char *d_output, unsigned char *d_input)
+{
+	[…]
+  // Copia de datos manual de global a compartida
+   d_input_sm[idx_compartida_] = d_input[idx_global_];
+	[…]
+}
+```
+
+Sincronización
+
+```c++
+__global__ void medianFilter2D_sm(unsigned char *d_output, unsigned char *d_input)
+{
+	[…]
+  // Sincronización de hilos para asegurar que todos los datos han sido copiados
+   __syncthreads();
+	[…]
+}
+```
+
+Utilización de datos compartidos:
+
+```c++
+__global__ void medianFilter2D_sm(unsigned char *d_output, unsigned char *d_input)
+{
+	[…]
+  // Utilización de datos de memoria compartida
+	north_ = d_input_sm_[idx_north_sm_];
+	north_east_ = d_input_sm_[idx_north_east_sm_];
+	[…]
+}
+```
+
