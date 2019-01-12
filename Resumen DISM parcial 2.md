@@ -390,3 +390,83 @@ cudaEventElapsedTime(&milliseconds_, t_start_, t_stop_);
 
 ### 7.1 Jerarquía de memorias
 
+- **Localidad espacial**. Cercanía física en la memoria del sistema de dos posiciones de memoria. En plan, si de verdad están pegadas.
+- **Localidad temporal**. Cercanía temporal en el acceso a varias posiciones de memoria. Ambas cosas suelen ir de la mano.
+
+Como una memoria rápida es cara, se utiliza una jerarquía de cachés, sucesivamente más rápidos y más pequeños, a través de los cuales se copian bloques de uno a otro. Se asume que las posiciones de memoria tendrán una baja localidad temporal y espacial.
+
+- CPU:
+
+![1547313272218](Resumen DISM parcial 2.assets/1547313272218.png)
+
+- GPU:
+
+![1547313306426](Resumen DISM parcial 2.assets/1547313306426.png)
+
+### 7.2 Tipos de memoria en la GPU
+
+![1547313380917](Resumen DISM parcial 2.assets/1547313380917.png)
+
+#### 7.2.1 Global
+
+- **Compartida** por todos los SMs
+- **Alta latencia** y **no cacheable**
+- Alberga **datos de la aplicación**
+- Reserva desde la CPU con `cudaMalloc()`
+- Liberación desde CPU con `cudaFree()`
+- Transferencia CPU-GPU con `cudaMemcpy()`
+
+#### 7.2.2 Local
+
+- **Información** local **de cada hilo**
+- Parte de DRAM (global) pero **cacheable** (L1 y L2)
+- Alberga **variables y vectores que no caben en registros**
+- Gestión **automática** desde GPU
+
+#### 7.7.3 Memoria de constantes
+
+- **Compartida** por todos los SMs
+- **Optimizada** para **solo lectura**
+- Alberga datos **constantes** (pero **pueden ser modificados**)
+- Reserva estática desde CPU (`__constant__`)
+- Transferencia CPU-GPU (`cudaMempcyToSymbol()`, `cudaMemcpyFromSymbol()`)
+
+#### 7.7.4 Memoria de texturas
+
+- **Compartida** por todos los SMs
+
+- **Cacheable** para **solo lectura**
+
+- **Optimizada** para **no coalescente**
+
+- Alberga datos **constantes**
+
+- Interpolación o normalización
+
+- Declarada con tipo de datos (`cudaArray`)
+
+#### 7.7.5 Registros
+
+- Cada SM posee una **cantidad fija**
+
+- Repartidos entre los hilos
+
+- Extremadamente **baja latencia**
+
+- Albergan **variables de los kernels**
+
+- Relativamente **limitados** en cantidad (depende del número de hilos en ejecución)
+
+#### 7.7.6 Memoria compartida
+
+- Cada SM posee una **cantidad fija**
+
+- **Compartida** por los hilos de **un mismo bloque**
+
+- **Latencia baja**
+
+- Albergan **datos reutilizables**
+
+- Reserva en la GPU (`__shared__`)
+
+- Copia de datos manual a posiciones de memoria en kernel
